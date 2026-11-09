@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titre %}Vidéothèque RT0705{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Vidéothèque RT0705 : tests des conteneurs</h1>
+        <nav>
+            <a href="{{ url_for('pages_test.simple') }}">1. Page simple</a>
+            <a href="{{ url_for('pages_test.formulaire') }}">2. Formulaire</a>
+            <a href="{{ url_for('pages_test.json_test') }}">3. Données JSON</a>
+        </nav>
+    </header>
+
+    <main>
+        {% block contenu %}{% endblock %}
+    </main>
+</body>
+</html>
