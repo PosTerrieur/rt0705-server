@@ -1,0 +1,109 @@
+{# Composants réutilisables. Utilisation : {% import "macros.html" as m %} #}
+
+{% macro etoiles(note) -%}
+{% if note is not none %}<span class="etoiles" title="{{ note }} / 5">{{ note | etoiles }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro badge_disponibilite(disponible) -%}
+{% if disponible %}<span class="badge text-bg-success">Disponible</span>
+{% else %}<span class="badge text-bg-secondary">Indisponible</span>{% endif %}
+{%- endmacro %}
+
+{% macro badge_pret(pret) -%}
+{% if pret.statut == "RENDU" %}<span class="badge text-bg-light border">Rendu le {{ pret.dateRetourEffective | date_fr }}</span>
+{% elif pret.enRetard %}<span class="badge text-bg-danger">En retard</span>
+{% else %}<span class="badge text-bg-primary">En cours</span>{% endif %}
+{%- endmacro %}
+
+{# Carte d'un film dans une grille (résumé renvoyé par GET /api/films) #}
+{% macro carte_film(film) %}
+<div class="col">
+    <div class="card h-100 shadow-sm carte-film">
+        {% if film.afficheUrl %}
+        <img src="{{ film.afficheUrl }}" class="card-img-top affiche" alt="Affiche de {{ film.titre }}">
+        {% else %}
+        <div class="affiche-vide">{{ film.titre[:1] }}</div>
+        {% endif %}
+        <div class="card-body">
+            <h2 class="h6 card-title mb-1">
+                <a href="{{ url_for('catalogue.film', film_id=film.id) }}" class="stretched-link text-decoration-none">{{ film.titre }}</a>
+            </h2>
+            <p class="small text-body-secondary mb-2">
+                {{ film.annee }}{% if film.realisateurs %} · {{ film.realisateurs | join(", ") }}{% endif %}
+            </p>
+            <p class="mb-1">
+                {% for genre in film.genres %}<span class="badge rounded-pill text-bg-light border me-1">{{ genre }}</span>{% endfor %}
+            </p>
+            {{ etoiles(film.noteMoyenne) }}
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center small">
+            <span class="text-body-secondary">
+                {% for type in film.typesSupports %}{{ type | libelle }}{% if not loop.last %}, {% endif %}{% else %}Aucun support{% endfor %}
+            </span>
+            {# Badge seulement si le film a au moins un support physique (empruntable) #}
+            {% if film.typesSupports | reject("equalto", "NUMERIQUE") | list %}{{ badge_disponibilite(film.disponible) }}{% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# Pagination à partir du bloc "pagination" renvoyé par l'API #}
+{% macro pagination(p) %}
+{% set nb_pages = (p.total + p.taille - 1) // p.taille %}
+{% if nb_pages > 1 %}
+<nav aria-label="Pagination">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if p.page <= 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_page(p.page - 1) }}">Précédent</a>
+        </li>
+        {% for n in range(1, nb_pages + 1) %}
+        <li class="page-item {% if n == p.page %}active{% endif %}"><a class="page-link" href="{{ url_page(n) }}">{{ n }}</a></li>
+        {% endfor %}
+        <li class="page-item {% if p.page >= nb_pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_page(p.page + 1) }}">Suivant</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endmacro %}
+
+{# --- Champs de formulaire avec affichage de l'erreur renvoyée par l'API --- #}
+
+{% macro valeur(valeurs, nom) -%}
+{{ valeurs[nom] if valeurs[nom] is defined and valeurs[nom] is not none else "" }}
+{%- endmacro %}
+
+{% macro erreur(erreurs, nom) -%}
+{% if erreurs[nom] %}<div class="invalid-feedback d-block">{{ erreurs[nom] }}</div>{% endif %}
+{%- endmacro %}
+
+{% macro champ(nom, label, valeurs, erreurs, type="text", requis=false, aide=none, attributs="") %}
+<div class="mb-3">
+    <label for="{{ nom }}" class="form-label">{{ label }}{% if requis %} <span class="text-danger">*</span>{% endif %}</label>
+    <input type="{{ type }}" class="form-control {% if erreurs[nom] %}is-invalid{% endif %}" id="{{ nom }}" name="{{ nom }}"
+           value="{{ valeur(valeurs, nom) }}" {% if requis %}required{% endif %} {{ attributs | safe }}>
+    {{ erreur(erreurs, nom) }}
+    {% if aide %}<div class="form-text">{{ aide }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro zone(nom, label, valeurs, erreurs, lignes=4, aide=none) %}
+<div class="mb-3">
+    <label for="{{ nom }}" class="form-label">{{ label }}</label>
+    <textarea class="form-control {% if erreurs[nom] %}is-invalid{% endif %}" id="{{ nom }}" name="{{ nom }}" rows="{{ lignes }}">{{ valeur(valeurs, nom) }}</textarea>
+    {{ erreur(erreurs, nom) }}
+    {% if aide %}<div class="form-text">{{ aide }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro liste(nom, label, options, valeurs, erreurs, requis=false) %}
+<div class="mb-3">
+    <label for="{{ nom }}" class="form-label">{{ label }}{% if requis %} <span class="text-danger">*</span>{% endif %}</label>
+    <select class="form-select {% if erreurs[nom] %}is-invalid{% endif %}" id="{{ nom }}" name="{{ nom }}" {% if requis %}required{% endif %}>
+        {% for option in options %}
+        <option value="{{ option }}" {% if valeurs[nom] == option %}selected{% endif %}>{{ option | libelle }}</option>
+        {% endfor %}
+    </select>
+    {{ erreur(erreurs, nom) }}
+</div>
+{% endmacro %}

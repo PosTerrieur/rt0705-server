@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}{{ "Modifier « " ~ film.titre ~ " »" if film else "Ajouter un film" }}{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-4">{{ "Modifier « " ~ film.titre ~ " »" if film else "Ajouter un film" }}</h1>
+
+<form class="card card-body shadow-sm" method="post" novalidate>
+    <div class="row">
+        <div class="col-md-6">{{ m.champ("titre", "Titre", valeurs, erreurs, requis=true) }}</div>
+        <div class="col-md-6">{{ m.champ("titreOriginal", "Titre original", valeurs, erreurs) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">{{ m.champ("annee", "Année", valeurs, erreurs, type="number", requis=true, attributs='min="1888"') }}</div>
+        <div class="col-sm-4">{{ m.champ("dureeMinutes", "Durée (minutes)", valeurs, erreurs, type="number", requis=true, attributs='min="1"') }}</div>
+        <div class="col-sm-4">{{ m.champ("langueOriginale", "Langue originale", valeurs, erreurs, aide="Code court : fr, en, ko...") }}</div>
+    </div>
+    {{ m.champ("genres", "Genres", valeurs, erreurs, aide="Séparés par des virgules : Drame, Thriller") }}
+    <div class="row">
+        <div class="col-md-6">{{ m.zone("realisateurs", "Réalisateurs", valeurs, erreurs, lignes=3, aide="Un nom par ligne. Un nom déjà connu est rattaché à la personne existante.") }}</div>
+        <div class="col-md-6">{{ m.zone("acteurs", "Acteurs", valeurs, erreurs, lignes=3, aide="Un nom par ligne.") }}</div>
+    </div>
+    {{ m.zone("synopsis", "Synopsis", valeurs, erreurs, lignes=4) }}
+    {{ m.champ("afficheUrl", "URL de l'affiche", valeurs, erreurs, type="url", aide="Facultatif") }}
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <a class="btn btn-link" href="{{ url_for('catalogue.film', film_id=film.id) if film else url_for('catalogue.catalogue') }}">Annuler</a>
+    </div>
+</form>
+{% endblock %}

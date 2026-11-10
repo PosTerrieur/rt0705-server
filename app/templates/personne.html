@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block titre %}{{ personne.nom }}{% endblock %}
+
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{{ personne.nom }}</h1>
+    {% if est_admin %}
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.personne_modifier', personne_id=personne.id) }}">Corriger le nom</a>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    {% for role, films in personne.filmographie.items() %}
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold">{{ role | libelle }} ({{ films | length }})</div>
+            <ul class="list-group list-group-flush">
+                {% for film in films %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <a href="{{ url_for('catalogue.film', film_id=film.id) }}">{{ film.titre }}</a>
+                    <span class="text-body-secondary">{{ film.annee }}</span>
+                </li>
+                {% else %}
+                <li class="list-group-item text-body-secondary">Aucun film</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

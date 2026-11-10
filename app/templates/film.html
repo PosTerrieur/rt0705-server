@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}{{ film.titre }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="fil d'Ariane" class="small mb-3">
+    <a href="{{ url_for('catalogue.catalogue') }}">← Catalogue</a>
+</nav>
+
+{# --- En-tête : titre et note moyenne en haut de page --- #}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="h2 mb-1">{{ film.titre }} <small class="text-body-secondary fw-normal">({{ film.annee }})</small></h1>
+        {% if film.titreOriginal and film.titreOriginal != film.titre %}
+        <p class="text-body-secondary fst-italic mb-1">{{ film.titreOriginal }}</p>
+        {% endif %}
+        <p class="mb-0">
+            {{ film.dureeMinutes | duree }}
+            {% if film.langueOriginale %} · VO {{ film.langueOriginale | upper }}{% endif %}
+            {% for genre in film.genres %} <span class="badge rounded-pill text-bg-light border">{{ genre }}</span>{% endfor %}
+        </p>
+    </div>
+    <div class="text-end">
+        {% if film.noteMoyenne is not none %}
+        <div class="fs-3">{{ m.etoiles(film.noteMoyenne) }}</div>
+        <div class="small text-body-secondary">{{ film.noteMoyenne }} / 5 · {{ film.nombreNotes }} note(s)</div>
+        {% else %}
+        <div class="small text-body-secondary">Pas encore noté</div>
+        {% endif %}
+    </div>
+</div>
+
+{% if est_admin %}
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.film_modifier', film_id=film.id) }}">Modifier le film</a>
+    <a class="btn btn-outline-success btn-sm" href="{{ url_for('admin.support_nouveau', film_id=film.id, categorie='PHYSIQUE') }}">+ Support physique</a>
+    <a class="btn btn-outline-success btn-sm" href="{{ url_for('admin.support_nouveau', film_id=film.id, categorie='NUMERIQUE') }}">+ Fichier numérique</a>
+    <form method="post" action="{{ url_for('admin.film_supprimer', film_id=film.id) }}"
+          data-confirmation="Supprimer ce film, ses supports, ses avis et son historique de prêts ?">
+        <button class="btn btn-outline-danger btn-sm" type="submit">Supprimer le film</button>
+    </form>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    {# --- Fiche --- #}
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                {% if film.synopsis %}<p>{{ film.synopsis }}</p>{% endif %}
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Réalisation</dt>
+                    <dd class="col-sm-9">
+                        {% for p in film.realisateurs %}<a href="{{ url_for('catalogue.personne', personne_id=p.id) }}">{{ p.nom }}</a>{% if not loop.last %}, {% endif %}
+                        {% else %}<span class="text-body-secondary">Non renseignée</span>{% endfor %}
+                    </dd>
+                    <dt class="col-sm-3">Avec</dt>
+                    <dd class="col-sm-9 mb-0">
+                        {% for p in film.acteurs %}<a href="{{ url_for('catalogue.personne', personne_id=p.id) }}">{{ p.nom }}</a>{% if not loop.last %}, {% endif %}
+                        {% else %}<span class="text-body-secondary">Non renseigné</span>{% endfor %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        {# --- Supports --- #}
+        <h2 class="h5">Supports</h2>
+        {% if film.supports %}
+        <div class="table-responsive mb-4">
+            <table class="table table-sm align-middle bg-body shadow-sm">
+                <thead class="table-light">
+                    <tr><th>Support</th><th>Détails</th><th>Disponibilité</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for s in film.supports %}
+                    <tr>
+                        {% if s.categorie == "PHYSIQUE" %}
+                        <td>{{ s.type | libelle }}</td>
+                        <td class="small">{{ s.etat | libelle }}{% if s.emplacement %} · {{ s.emplacement }}{% endif %}
+                            {% if s.commentaire %}<br><span class="text-body-secondary">{{ s.commentaire }}</span>{% endif %}</td>
+                        <td>{{ m.badge_disponibilite(s.disponible) }}</td>
+                        {% else %}
+                        <td>Numérique</td>
+                        <td class="small">{{ s.format }}{% if s.resolution %} {{ s.resolution }}{% endif %}{% if s.tailleGo %} · {{ s.tailleGo }} Go{% endif %}
+                            <br><code>{{ s.chemin }}</code></td>
+                        <td><span class="badge text-bg-info">Fichier</span></td>
+                        {% endif %}
+                        <td class="text-end text-nowrap">
+                            {% if utilisateur and s.disponible %}
+                            <form class="d-inline" method="post" action="{{ url_for('compte.emprunter', support_id=s.id) }}">
+                                <input type="hidden" name="film_id" value="{{ film.id }}">
+                                <button class="btn btn-success btn-sm" type="submit">Emprunter</button>
+                            </form>
+                            {% endif %}
+                            {% if est_admin %}
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.support_modifier', support_id=s.id) }}">Modifier</a>
+                            <form class="d-inline" method="post" action="{{ url_for('admin.support_supprimer', support_id=s.id) }}"
+                                  data-confirmation="Supprimer ce support et son historique de prêts ?">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Supprimer</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not utilisateur %}
+        <p class="small text-body-secondary"><a href="{{ url_for('compte.connexion', suivant=request.path) }}">Connectez-vous</a> pour emprunter</p>
+        {% endif %}
+        {% else %}
+        <p class="text-body-secondary">Aucun support pour l'instant : ce film n'est pas encore dans la collection</p>
+        {% endif %}
+    </div>
+
+    {# --- Mon suivi --- #}
+    <div class="col-lg-4">
+        <div class="card shadow-sm" id="mon-suivi">
+            <div class="card-header fw-semibold">Mon suivi</div>
+            <div class="card-body">
+                {% if utilisateur %}
+                <form method="post" action="{{ url_for('compte.suivi', film_id=film.id) }}">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="vu" name="vu" {% if suivi and suivi.vu %}checked{% endif %}>
+                        <label class="form-check-label" for="vu">J'ai vu ce film</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="note">Ma note</label>
+                        <select class="form-select" id="note" name="note">
+                            <option value="">Pas de note</option>
+                            {% for n in range(5, -1, -1) %}
+                            <option value="{{ n }}" {% if suivi and suivi.note == n %}selected{% endif %}>{{ "★" * n }}{{ "☆" * (5 - n) }} ({{ n }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="commentaire">Mon avis</label>
+                        <textarea class="form-control" id="commentaire" name="commentaire" rows="3">{{ suivi.commentaire if suivi and suivi.commentaire else "" }}</textarea>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">Enregistrer</button>
+                    {% if suivi %}<p class="small text-body-secondary mt-2 mb-0">Mis à jour le {{ suivi.dateMaj | date_fr }}</p>{% endif %}
+                </form>
+                {% else %}
+                <p class="mb-0 small"><a href="{{ url_for('compte.connexion', suivant=request.path) }}">Connectez-vous</a> pour noter ce film</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# --- Avis des membres, en bas de page --- #}
+<section class="mt-4">
+    <h2 class="h5">Avis des membres</h2>
+    {% for avis in film.avis %}
+    <div class="card card-body shadow-sm mb-2">
+        <div class="d-flex justify-content-between">
+            <strong>{{ avis.login }}</strong>
+            <span class="small text-body-secondary">{{ avis.dateMaj | date_fr }}</span>
+        </div>
+        {% if avis.note is not none %}<div>{{ m.etoiles(avis.note) }}</div>{% endif %}
+        {% if avis.commentaire %}<p class="mb-0 mt-1">{{ avis.commentaire }}</p>{% endif %}
+    </div>
+    {% else %}
+    <p class="text-body-secondary">Aucun avis pour le moment</p>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}Catalogue{% endblock %}
+
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-baseline mb-3">
+    <h1 class="h3 mb-0">Catalogue</h1>
+    <span class="text-body-secondary">{{ resultat.pagination.total }} film(s)</span>
+</div>
+
+<div class="row g-4">
+    {# --- Filtres : envoyés en GET, la page les transmet tels quels à l'API --- #}
+    <aside class="col-lg-3">
+        <form class="card card-body shadow-sm" action="{{ url_for('catalogue.catalogue') }}">
+            <div class="mb-2">
+                <label class="form-label small" for="q">Titre</label>
+                <input class="form-control form-control-sm" id="q" name="q" value="{{ criteres.q or '' }}">
+            </div>
+            <div class="mb-2">
+                <label class="form-label small" for="genre">Genre</label>
+                <input class="form-control form-control-sm" id="genre" name="genre" value="{{ criteres.genre or '' }}" placeholder="Drame, Thriller...">
+            </div>
+            <div class="mb-2">
+                <label class="form-label small" for="annee">Année</label>
+                <input class="form-control form-control-sm" id="annee" name="annee" type="number" min="1888" value="{{ criteres.annee or '' }}">
+            </div>
+            <div class="mb-2">
+                <label class="form-label small" for="realisateur">Réalisateur</label>
+                <input class="form-control form-control-sm" id="realisateur" name="realisateur" value="{{ criteres.realisateur or '' }}">
+            </div>
+            <div class="mb-2">
+                <label class="form-label small" for="acteur">Acteur</label>
+                <input class="form-control form-control-sm" id="acteur" name="acteur" value="{{ criteres.acteur or '' }}">
+            </div>
+            <div class="mb-2">
+                <label class="form-label small" for="type">Support</label>
+                <select class="form-select form-select-sm" id="type" name="type">
+                    <option value="">Tous</option>
+                    {% for type in types %}
+                    <option value="{{ type }}" {% if criteres.type == type %}selected{% endif %}>{{ type | libelle }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="disponible" name="disponible" value="true" {% if criteres.disponible %}checked{% endif %}>
+                <label class="form-check-label small" for="disponible">Disponibles uniquement</label>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-7">
+                    <label class="form-label small" for="tri">Trier par</label>
+                    <select class="form-select form-select-sm" id="tri" name="tri">
+                        {% for valeur, nom in tris.items() %}
+                        <option value="{{ valeur }}" {% if criteres.tri == valeur %}selected{% endif %}>{{ nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-5">
+                    <label class="form-label small" for="ordre">Ordre</label>
+                    <select class="form-select form-select-sm" id="ordre" name="ordre">
+                        <option value="asc">↑</option>
+                        <option value="desc" {% if criteres.ordre == "desc" %}selected{% endif %}>↓</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
+            <a class="btn btn-link btn-sm" href="{{ url_for('catalogue.catalogue') }}">Réinitialiser</a>
+        </form>
+    </aside>
+
+    {# --- Résultats --- #}
+    <section class="col-lg-9">
+        {% if resultat.elements %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3 mb-4">
+            {% for film in resultat.elements %}{{ m.carte_film(film) }}{% endfor %}
+        </div>
+        {{ m.pagination(resultat.pagination) }}
+        {% else %}
+        <div class="alert alert-light border">Aucun film ne correspond à ces critères</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

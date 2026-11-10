@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}Supervision des prêts{% endblock %}
+
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-baseline mb-3">
+    <h1 class="h3 mb-0">Supervision des prêts</h1>
+    <span class="text-body-secondary">{{ resultat.pagination.total }} prêt(s)</span>
+</div>
+
+<form class="row g-2 align-items-end mb-4">
+    <div class="col-sm-3">
+        <label class="form-label small" for="statut">Statut</label>
+        <select class="form-select form-select-sm" id="statut" name="statut">
+            <option value="">Tous</option>
+            <option value="EN_COURS" {% if filtres.statut == "EN_COURS" %}selected{% endif %}>En cours</option>
+            <option value="RENDU" {% if filtres.statut == "RENDU" %}selected{% endif %}>Rendus</option>
+        </select>
+    </div>
+    <div class="col-sm-3">
+        <label class="form-label small" for="utilisateurId">Membre</label>
+        <select class="form-select form-select-sm" id="utilisateurId" name="utilisateurId">
+            <option value="">Tous</option>
+            {% for u in utilisateurs %}
+            <option value="{{ u.id }}" {% if filtres.utilisateurId == u.id %}selected{% endif %}>{{ u.login }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-sm-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="enRetard" name="enRetard" value="1" {% if filtres.enRetard %}checked{% endif %}>
+            <label class="form-check-label small" for="enRetard">En retard uniquement</label>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
+        <a class="btn btn-link btn-sm" href="{{ url_for('admin.prets') }}">Réinitialiser</a>
+    </div>
+</form>
+
+{% if resultat.elements %}
+<div class="table-responsive">
+    <table class="table table-sm align-middle bg-body shadow-sm">
+        <thead class="table-light">
+            <tr><th>Film</th><th>Support</th><th>Membre</th><th>Du</th><th>Retour prévu</th><th>État</th><th>Remarque / clôture</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for pret in resultat.elements %}
+            <tr class="{% if pret.enRetard %}table-danger{% endif %}">
+                <td><a href="{{ url_for('catalogue.film', film_id=pret.film.id) }}">{{ pret.film.titre }}</a></td>
+                <td class="small">
+                    <a href="{{ url_for('admin.support_modifier', support_id=pret.support.id) }}" title="Modifier l'état du support">{{ pret.support.type | libelle }}</a>
+                    {% if pret.support.emplacement %}<br>{{ pret.support.emplacement }}{% endif %}
+                </td>
+                <td>{{ pret.emprunteur.login }}</td>
+                <td>{{ pret.dateDebut | date_fr }}</td>
+                <td>{{ pret.dateRetourPrevue | date_fr }}</td>
+                <td>{{ m.badge_pret(pret) }}</td>
+                <td class="small">
+                    {{ pret.remarqueRetour or "" }}
+                    {% if pret.retourEnregistrePar and pret.retourEnregistrePar != pret.utilisateurId %}
+                    <br><span class="text-body-secondary">clôturé par {{ logins.get(pret.retourEnregistrePar, "?") }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    {% if pret.statut == "EN_COURS" %}
+                    <form method="post" action="{{ url_for('compte.rendre', pret_id=pret.id) }}"
+                          data-confirmation="Clôturer ce prêt au nom de {{ pret.emprunteur.login }} ?">
+                        <input type="hidden" name="retour_vers" value="admin">
+                        <input type="hidden" name="remarque" value="Clôturé par l'administration">
+                        <button class="btn btn-outline-success btn-sm text-nowrap" type="submit">Clôturer</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{{ m.pagination(resultat.pagination) }}
+{% else %}
+<div class="alert alert-light border">Aucun prêt ne correspond à ces critères</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}Corriger « {{ personne.nom }} »{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-1">Corriger « {{ personne.nom }} »</h1>
+{% set nb_films = personne.filmographie.REALISATEUR | length + personne.filmographie.ACTEUR | length %}
+<p class="text-body-secondary mb-4">La correction s'appliquera à {{ nb_films }} participation(s) dans les films</p>
+
+<form class="card card-body shadow-sm col-md-6" method="post" novalidate>
+    {{ m.champ("nom", "Nom", valeurs, erreurs, requis=true) }}
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <a class="btn btn-link" href="{{ url_for('catalogue.personne', personne_id=personne.id) }}">Annuler</a>
+    </div>
+</form>
+{% endblock %}

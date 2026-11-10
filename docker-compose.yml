@@ -1,18 +1,28 @@
 # Tiers présentation : site web Flask + Jinja
+#
+# CRÉATION COORDONNÉE : "include" ajoute le service api défini dans le dépôt API/
+include:
+  - ../API/docker-compose.yml
+
 services:
   web:
     build: .
     image: rt0705/videotheque-web:dev
+    container_name: videotheque-web
     ports:
       - "8080:5000"
     environment:
       FLASK_RUN_PORT: "5000"
       FLASK_DEBUG: "1"
       API_URL: "http://api:5001/api"
+      SECRET_KEY: "${SECRET_KEY:-cle-de-developpement-a-changer}"   # à définir dans .env
     volumes:
       - ./app:/app
     networks:
       - videotheque_net
+    depends_on:
+      api:
+        condition: service_healthy
 
 networks:
   videotheque_net:

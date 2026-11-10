@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block titre %}Connexion{% endblock %}
+
+{% block contenu %}
+<div class="row justify-content-center">
+    <div class="col-sm-9 col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-4 text-center">Connexion</h1>
+                <form method="post" action="{{ url_for('compte.connexion') }}">
+                    <input type="hidden" name="suivant" value="{{ suivant }}">
+                    <div class="mb-3">
+                        <label class="form-label" for="login">Identifiant</label>
+                        <input class="form-control" id="login" name="login" value="{{ login }}" required autofocus autocomplete="username">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="motDePasse">Mot de passe</label>
+                        <input class="form-control" id="motDePasse" name="motDePasse" type="password" required autocomplete="current-password">
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">Se connecter</button>
+                </form>
+            </div>
+        </div>
+        <p class="small text-body-secondary text-center mt-3">
+            Pas de compte ? Demandez-en un à l'administrateur de la vidéothèque
+        </p>
+    </div>
+</div>
+{% endblock %}

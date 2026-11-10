@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}Accueil{% endblock %}
+
+{% block contenu %}
+<section class="p-4 p-md-5 mb-4 bg-dark text-white rounded-3 bandeau">
+    <h1 class="display-6 fw-bold">Notre vidéothèque partagée</h1>
+    <p class="lead mb-4">Parcourez la collection, trouvez un film et empruntez-le en un clic</p>
+    <form class="row g-2" action="{{ url_for('catalogue.catalogue') }}">
+        <div class="col-sm-8 col-md-6">
+            <input class="form-control form-control-lg" type="search" name="q" placeholder="Titre d'un film..." aria-label="Titre">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-warning btn-lg" type="submit">Rechercher</button>
+        </div>
+    </form>
+    {% if not utilisateur %}
+    <p class="small mt-3 mb-0 text-white-50">
+        <a class="link-light" href="{{ url_for('compte.connexion') }}">Connectez-vous</a> pour emprunter un film et donner votre avis
+    </p>
+    {% endif %}
+</section>
+
+<div class="d-flex justify-content-between align-items-baseline mb-3">
+    <h2 class="h4 mb-0">Derniers ajouts</h2>
+    <a href="{{ url_for('catalogue.catalogue') }}">Tout le catalogue →</a>
+</div>
+
+{% if films %}
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+    {% for film in films %}{{ m.carte_film(film) }}{% endfor %}
+</div>
+{% else %}
+<p class="text-body-secondary">La vidéothèque est encore vide</p>
+{% endif %}
+{% endblock %}

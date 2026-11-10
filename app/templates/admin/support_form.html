@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% set libelle_categorie = "support physique" if categorie == "PHYSIQUE" else "fichier numérique" %}
+{% block titre %}{{ "Modifier" if support else "Ajouter" }} un {{ libelle_categorie }}{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-1">{{ "Modifier" if support else "Ajouter" }} un {{ libelle_categorie }}</h1>
+<p class="text-body-secondary mb-4">Film : <a href="{{ url_for('catalogue.film', film_id=film.id) }}">{{ film.titre }} ({{ film.annee }})</a></p>
+
+<form class="card card-body shadow-sm" method="post" novalidate>
+    <input type="hidden" name="categorie" value="{{ categorie }}">
+
+    {% if categorie == "PHYSIQUE" %}
+    <div class="row">
+        <div class="col-sm-4">{{ m.liste("type", "Type", types, valeurs, erreurs, requis=true) }}</div>
+        <div class="col-sm-4">{{ m.liste("etat", "État", etats, valeurs, erreurs) }}</div>
+        <div class="col-sm-4">{{ m.champ("emplacement", "Emplacement", valeurs, erreurs, aide="Ex. : Étagère A2") }}</div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-sm-4">{{ m.champ("format", "Format", valeurs, erreurs, requis=true, aide="MKV, MP4...") }}</div>
+        <div class="col-sm-4">{{ m.champ("resolution", "Résolution", valeurs, erreurs, aide="1080p, 4K...") }}</div>
+        <div class="col-sm-4">{{ m.champ("tailleGo", "Taille (Go)", valeurs, erreurs, type="number", attributs='step="0.1" min="0"') }}</div>
+    </div>
+    {{ m.champ("chemin", "Chemin du fichier", valeurs, erreurs, requis=true, aide="Ex : /media/films/inception.mkv") }}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-sm-4">{{ m.champ("dateAcquisition", "Date d'acquisition", valeurs, erreurs, type="date", aide="Aujourd'hui si vide") }}</div>
+        <div class="col-sm-8">{{ m.champ("commentaire", "Commentaire", valeurs, erreurs) }}</div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <a class="btn btn-link" href="{{ url_for('catalogue.film', film_id=film.id) }}">Annuler</a>
+    </div>
+</form>
+{% endblock %}

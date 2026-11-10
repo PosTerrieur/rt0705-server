@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}Mon profil{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-4">Mon profil</h1>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Identifiant</dt><dd class="col-7">{{ profil.login }}</dd>
+                    <dt class="col-5">Email</dt><dd class="col-7">{{ profil.email }}</dd>
+                    <dt class="col-5">Rôle</dt><dd class="col-7">{{ profil.role | libelle }}</dd>
+                    <dt class="col-5">Inscription</dt><dd class="col-7 mb-0">{{ profil.dateInscription | date_fr }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Modifier mes informations</div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('compte.profil') }}">
+                    {{ m.champ("email", "Email", {"email": request.form.get("email", profil.email)}, erreurs, type="email", requis=true) }}
+                    {{ m.champ("nouveauMotDePasse", "Nouveau mot de passe", {}, erreurs, type="password",
+                               aide="Laisser vide pour le conserver (8 caractères minimum)", attributs='autocomplete="new-password"') }}
+                    {{ m.champ("confirmation", "Confirmation du nouveau mot de passe", {}, erreurs, type="password",
+                               attributs='autocomplete="new-password"') }}
+                    <hr>
+                    {{ m.champ("motDePasseActuel", "Mot de passe actuel", {}, erreurs, type="password", requis=true,
+                               aide="Obligatoire pour valider toute modification", attributs='autocomplete="current-password"') }}
+                    <button class="btn btn-primary" type="submit">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block titre %}Erreur {{ statut }}{% endblock %}
+
+{% block contenu %}
+<div class="text-center py-5">
+    <p class="display-4 fw-bold text-body-secondary">{{ statut }}</p>
+    <h1 class="h4 mb-3">
+        {% if statut == 403 %}Accès interdit
+        {% elif statut == 404 %}Page introuvable
+        {% elif statut == 503 %}Service indisponible
+        {% else %}Une erreur est survenue{% endif %}
+    </h1>
+    <p class="text-body-secondary">{{ message }}</p>
+    <a class="btn btn-primary mt-2" href="{{ url_for('catalogue.accueil') }}">Retour à l'accueil</a>
+</div>
+{% endblock %}

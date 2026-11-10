@@ -1,83 +1,34 @@
-/* Mise en forme minimale des pages de test */
-body {
-    font-family: system-ui, sans-serif;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 1rem 2rem;
-    color: #222;
-    line-height: 1.5;
+/* Compléments à Bootstrap : uniquement ce que Bootstrap ne fournit pas */
+
+.bandeau {
+    background: linear-gradient(135deg, #1f2937 0%, #374151 60%, #92400e 100%);
 }
 
-header {
-    border-bottom: 2px solid #345;
-    margin-bottom: 1.5rem;
+.carte-film .affiche {
+    height: 220px;
+    object-fit: cover;
 }
 
-nav a {
-    margin-right: 1.25rem;
-    color: #345;
-    font-weight: 600;
+/* Vignette de remplacement quand le film n'a pas d'affiche : initiale du titre */
+.carte-film .affiche-vide {
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #475569, #1e293b);
+    border-top-left-radius: var(--bs-card-inner-border-radius);
+    border-top-right-radius: var(--bs-card-inner-border-radius);
 }
 
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-bottom: 1.5rem;
-}
-
-th, td {
-    border: 1px solid #ccc;
-    padding: 0.4rem 0.6rem;
-    text-align: left;
-    vertical-align: top;
-}
-
-th {
-    background: #eef1f5;
-}
-
-form {
-    display: grid;
-    gap: 0.4rem;
-    max-width: 420px;
-}
-
-form label {
-    margin-top: 0.6rem;
-    font-weight: 600;
-}
-
-form label.case {
-    font-weight: normal;
-}
-
-button {
-    margin-top: 1rem;
-    padding: 0.5rem;
-    cursor: pointer;
-}
-
-.alerte {
-    padding: 0.6rem 0.8rem;
-    border-radius: 4px;
-}
-
-.alerte.succes { background: #e3f4e6; border: 1px solid #7bbf86; }
-.alerte.erreur { background: #fbe5e5; border: 1px solid #d98080; }
-
-.champ-erreur {
-    color: #b02a2a;
-    font-size: 0.9rem;
+.carte-film:hover {
+    transform: translateY(-2px);
+    transition: transform 0.15s ease;
 }
 
 .etoiles {
-    font-size: 1.6rem;
-    color: #d4a017;
-}
-
-pre {
-    background: #f5f5f5;
-    padding: 1rem;
-    overflow-x: auto;
-    font-size: 0.85rem;
+    color: #f59e0b;
+    letter-spacing: 0.1em;
 }

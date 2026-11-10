@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}{{ "Modifier « " ~ compte.login ~ " »" if compte else "Nouveau compte" }}{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-4">{{ "Modifier le compte « " ~ compte.login ~ " »" if compte else "Nouveau compte" }}</h1>
+
+<form class="card card-body shadow-sm col-lg-8" method="post" novalidate>
+    {% if not compte %}
+    {{ m.champ("login", "Identifiant", valeurs, erreurs, requis=true, aide="3 à 30 caractères : lettres, chiffres, point, tiret, souligné") }}
+    {% endif %}
+    {{ m.champ("email", "Email", valeurs, erreurs, type="email", requis=true) }}
+    {{ m.liste("role", "Rôle", roles, valeurs, erreurs) }}
+    {{ m.champ("motDePasse", "Mot de passe" if not compte else "Nouveau mot de passe", {}, erreurs, type="password",
+               requis=not compte, aide="8 caractères minimum" if not compte else "Laisser vide pour ne pas le changer",
+               attributs='autocomplete="new-password"') }}
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <a class="btn btn-link" href="{{ url_for('admin.utilisateurs') }}">Annuler</a>
+    </div>
+</form>
+{% endblock %}

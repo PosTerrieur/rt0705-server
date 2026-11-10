@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block titre %}Comptes{% endblock %}
+
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Comptes</h1>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('admin.utilisateur_nouveau') }}">+ Nouveau compte</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table align-middle bg-body shadow-sm">
+        <thead class="table-light">
+            <tr><th>Identifiant</th><th>Email</th><th>Rôle</th><th>Inscription</th><th>Statut</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for compte in utilisateurs %}
+            <tr class="{% if not compte.actif %}text-body-secondary{% endif %}">
+                <td>{{ compte.login }}</td>
+                <td>{{ compte.email }}</td>
+                <td>{% if compte.role == "ADMIN" %}<span class="badge text-bg-warning">Administrateur</span>{% else %}Membre{% endif %}</td>
+                <td>{{ compte.dateInscription | date_fr }}</td>
+                <td>{% if compte.actif %}<span class="badge text-bg-success">Actif</span>{% else %}<span class="badge text-bg-secondary">Désactivé</span>{% endif %}</td>
+                <td class="text-end text-nowrap">
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.utilisateur_modifier', utilisateur_id=compte.id) }}">Modifier</a>
+                    <form class="d-inline" method="post" action="{{ url_for('admin.utilisateur_activation', utilisateur_id=compte.id) }}"
+                          {% if compte.actif %}data-confirmation="Désactiver le compte {{ compte.login }} ? Ses sessions seront fermées"{% endif %}>
+                        <input type="hidden" name="actif" value="{{ '0' if compte.actif else '1' }}">
+                        <button class="btn btn-sm {{ 'btn-outline-danger' if compte.actif else 'btn-outline-success' }}" type="submit">
+                            {{ "Désactiver" if compte.actif else "Réactiver" }}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

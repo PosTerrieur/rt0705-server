@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block titre %}Mes prêts{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-4">Mes prêts</h1>
+
+<h2 class="h5">En cours ({{ en_cours | length }})</h2>
+{% if en_cours %}
+<div class="table-responsive mb-5">
+    <table class="table align-middle bg-body shadow-sm">
+        <thead class="table-light">
+            <tr><th>Film</th><th>Support</th><th>Emprunté le</th><th>À rendre avant le</th><th>État</th><th>Rendre</th></tr>
+        </thead>
+        <tbody>
+            {% for pret in en_cours %}
+            <tr class="{% if pret.enRetard %}table-danger{% endif %}">
+                <td><a href="{{ url_for('catalogue.film', film_id=pret.film.id) }}">{{ pret.film.titre }}</a></td>
+                <td class="small">{{ pret.support.type | libelle }}{% if pret.support.emplacement %}<br>{{ pret.support.emplacement }}{% endif %}</td>
+                <td>{{ pret.dateDebut | date_fr }}</td>
+                <td>{{ pret.dateRetourPrevue | date_fr }}</td>
+                <td>{{ m.badge_pret(pret) }}</td>
+                <td>
+                    <form class="d-flex gap-2" method="post" action="{{ url_for('compte.rendre', pret_id=pret.id) }}">
+                        <input class="form-control form-control-sm" name="remarque" placeholder="Remarque (facultatif)" aria-label="Remarque">
+                        <button class="btn btn-success btn-sm text-nowrap" type="submit">Je l'ai rendu</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-body-secondary mb-5">Aucun prêt en cours <a href="{{ url_for('catalogue.catalogue', disponible='true') }}">Voir les films disponibles</a></p>
+{% endif %}
+
+<h2 class="h5">Historique</h2>
+{% if historique.elements %}
+<div class="table-responsive">
+    <table class="table table-sm bg-body shadow-sm">
+        <thead class="table-light">
+            <tr><th>Film</th><th>Support</th><th>Emprunté le</th><th>Rendu le</th><th>Remarque</th></tr>
+        </thead>
+        <tbody>
+            {% for pret in historique.elements %}
+            <tr>
+                <td><a href="{{ url_for('catalogue.film', film_id=pret.film.id) }}">{{ pret.film.titre }}</a></td>
+                <td>{{ pret.support.type | libelle }}</td>
+                <td>{{ pret.dateDebut | date_fr }}</td>
+                <td>
+                    {{ pret.dateRetourEffective | date_fr }}
+                    {% if pret.retourEnregistrePar != utilisateur.id %}<span class="badge text-bg-light border">clôturé par un admin</span>{% endif %}
+                </td>
+                <td class="small">{{ pret.remarqueRetour or "" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{{ m.pagination(historique.pagination) }}
+{% else %}
+<p class="text-body-secondary">Aucun prêt terminé</p>
+{% endif %}
+{% endblock %}
