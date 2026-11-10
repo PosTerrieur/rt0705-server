@@ -19,7 +19,7 @@ class ErreurApi(Exception):
         self.details = details or {}
 
 
-def _appel(methode, chemin, corps=None, params=None, jeton=None):
+def _appel(methode, chemin, corps=None, params=None, jeton=None, delai=DELAI_SECONDES):
     """Envoie la requête et renvoie le JSON décodé (None pour une réponse 204)"""
     entetes = {}
     jeton = jeton or session.get("jeton")
@@ -31,7 +31,7 @@ def _appel(methode, chemin, corps=None, params=None, jeton=None):
 
     try:
         reponse = requests.request(methode, API_URL + chemin, json=corps, params=params,
-                                   headers=entetes, timeout=DELAI_SECONDES)
+                                   headers=entetes, timeout=delai)
     except requests.RequestException as erreur:
         raise ErreurApi(503, "API_INJOIGNABLE",
                         "Le service de données est momentanément indisponible") from erreur
@@ -166,3 +166,10 @@ def mon_suivi(film_id):
 
 def enregistrer_suivi(film_id, corps):
     return _appel("PUT", f"/utilisateurs/me/suivis/{film_id}", corps)
+
+
+# --- Métadonnées externes (bonus F15) ----------------------------------------------------
+
+def importer_metadonnees(titre, annee=None):
+    """Proposition de fiche depuis TMDb"""
+    return _appel("GET", "/metadonnees", params={"titre": titre, "annee": annee}, delai=15)

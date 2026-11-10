@@ -6,6 +6,27 @@
 {% block contenu %}
 <h1 class="h3 mb-4">{{ "Modifier « " ~ film.titre ~ " »" if film else "Ajouter un film" }}</h1>
 
+{% if not film %}
+{# --- Bonus F15 : préremplissage depuis TMDb (requête GET, rien n'est enregistré) --- #}
+<form class="card card-body shadow-sm mb-4 border-primary-subtle" method="get" action="{{ url_for('admin.film_nouveau') }}">
+    <div class="fw-semibold mb-2">Préremplir depuis TMDb <span class="badge text-bg-light border fw-normal">facultatif</span></div>
+    <div class="row g-2">
+        <div class="col-md-6">
+            <input class="form-control" name="import_titre" placeholder="Titre du film" aria-label="Titre à rechercher"
+                   value="{{ request.args.get('import_titre', '') }}" required>
+        </div>
+        <div class="col-md-3">
+            <input class="form-control" name="import_annee" type="number" min="1888" placeholder="Année (facultatif)"
+                   aria-label="Année" value="{{ request.args.get('import_annee', '') }}">
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-outline-primary w-100" type="submit">Rechercher</button>
+        </div>
+    </div>
+    <div class="form-text">Titre, année, durée, genres, synopsis, affiche, réalisation et distribution sont proposés : vérifiez-les avant d'enregistrer</div>
+</form>
+{% endif %}
+
 <form class="card card-body shadow-sm" method="post" novalidate>
     <div class="row">
         <div class="col-md-6">{{ m.champ("titre", "Titre", valeurs, erreurs, requis=true) }}</div>
@@ -23,6 +44,9 @@
     </div>
     {{ m.zone("synopsis", "Synopsis", valeurs, erreurs, lignes=4) }}
     {{ m.champ("afficheUrl", "URL de l'affiche", valeurs, erreurs, type="url", aide="Facultatif") }}
+    {% if valeurs.afficheUrl %}
+    <img src="{{ valeurs.afficheUrl }}" alt="Aperçu de l'affiche" class="img-thumbnail mb-3 apercu-affiche">
+    {% endif %}
 
     <div class="d-flex gap-2">
         <button class="btn btn-primary" type="submit">Enregistrer</button>

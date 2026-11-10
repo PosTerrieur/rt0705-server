@@ -17,10 +17,26 @@ PRETS_PAR_PAGE = 20
 
 # --- Films (F06) ---------------------------------------------------------------------
 
+def _proposition_tmdb(titre, annee):
+    """Valeurs du formulaire préremplies depuis TMDb (bonus F15)"""
+    try:
+        proposition = api.importer_metadonnees(titre, annee)
+    except ErreurApi as erreur:
+        if erreur.statut not in (400, 404, 503):
+            raise
+        flash(f"Import impossible : {erreur.message} Vous pouvez saisir la fiche manuellement", "warning")
+        return {"titre": titre, "annee": annee}
+    flash("Fiche préremplie depuis TMDb : vérifiez les informations, puis enregistrez", "info")
+    return formulaires.film_vers_formulaire(proposition)
+
+
 @bp.route("/films/nouveau", methods=["GET", "POST"])
 @admin_requis
 def film_nouveau():
     valeurs, erreurs = {}, {}
+    titre_import = request.args.get("import_titre", "").strip()
+    if request.method == "GET" and titre_import:
+        valeurs = _proposition_tmdb(titre_import, request.args.get("import_annee", "").strip() or None)
     if request.method == "POST":
         valeurs = request.form.to_dict()
         try:

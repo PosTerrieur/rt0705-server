@@ -1,6 +1,9 @@
 # Tiers présentation : site web Flask + Jinja
 #
-# CRÉATION COORDONNÉE : "include" ajoute le service api défini dans le dépôt API/
+# CRÉATION COORDONNÉE : "include" ajoute le service api défini dans le dépôt API/.
+# Un seul "docker compose up" depuis ce dossier construit et démarre les DEUX conteneurs,
+# dans le bon ordre : le site attend que l'API soit en bonne santé (healthcheck).
+# Nécessite Docker Compose 2.20 ou plus récent (docker compose version).
 include:
   - ../API/docker-compose.yml
 
@@ -10,20 +13,20 @@ services:
     image: rt0705/videotheque-web:dev
     container_name: videotheque-web
     ports:
-      - "8080:5000"
+      - "8080:5000"                             # seul port publié de toute l'application
     environment:
       FLASK_RUN_PORT: "5000"
-      FLASK_DEBUG: "1"
+      FLASK_DEBUG: "${FLASK_DEBUG:-0}"          # 1 dans .env : rechargement auto du code (développement)
       API_URL: "http://api:5001/api"
-      SECRET_KEY: "${SECRET_KEY:-cle-de-developpement-a-changer}"   # à définir dans .env
+      SECRET_KEY: "${SECRET_KEY:-cle-de-developpement-a-changer}"   # à définir dans .env (non versionné)
     volumes:
-      - ./app:/app
+      - ./app:/app                              # code partagé avec l'hôte
     networks:
       - videotheque_net
     depends_on:
       api:
-        condition: service_healthy
+        condition: service_healthy              # démarre seulement quand l'API répond
 
 networks:
   videotheque_net:
-    external: true
+    external: true                # créé une fois pour toutes : docker network create videotheque_net

@@ -77,13 +77,16 @@ def film(formulaire):
     return corps
 
 
-def film_vers_formulaire(fiche):
-    """Fiche renvoyée par l'API -> valeurs pour préremplir le formulaire"""
+def film_vers_formulaire(film):
+    """Fiche (ou proposition TMDb) renvoyée par l'API -> valeurs du formulaire"""
+    def noms(personnes):
+        return "\n".join(p["nom"] if isinstance(p, dict) else p for p in personnes)
+
     return {
-        **fiche,
-        "genres": ", ".join(fiche["genres"]),
-        "realisateurs": "\n".join(p["nom"] for p in fiche["realisateurs"]),
-        "acteurs": "\n".join(p["nom"] for p in fiche["acteurs"]),
+        **film,
+        "genres": ", ".join(film["genres"]),
+        "realisateurs": noms(film["realisateurs"]),
+        "acteurs": noms(film["acteurs"]),
     }
 
 

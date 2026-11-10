@@ -28,6 +28,15 @@
     transition: transform 0.15s ease;
 }
 
+.affiche-fiche {
+    width: 160px;
+}
+
+.apercu-affiche {
+    max-height: 220px;
+    width: auto;
+}
+
 .etoiles {
     color: #f59e0b;
     letter-spacing: 0.1em;
